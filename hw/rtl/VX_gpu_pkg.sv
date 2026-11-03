@@ -62,6 +62,14 @@ package VX_gpu_pkg;
     localparam NUM_OPCS_BITS = `CLOG2(`NUM_OPCS);
     localparam NUM_OPCS_W = `UP(NUM_OPCS_BITS);
 
+// combined_sim / cache_sim override UUID_WIDTH via verilog_define
+// `UUID_WIDTH_OVERRIDE=<N>` to keep the dispatcher's routing tag
+// preserved end-to-end (Vortex's default `NDEBUG` paths give 1, which
+// truncates id/tid/eblock fields; default 44 makes L3 tags exceed the
+// 32-bit Xilinx IP cap).
+`ifdef UUID_WIDTH_OVERRIDE
+	localparam UUID_WIDTH = `UUID_WIDTH_OVERRIDE;
+`else
 `ifndef NDEBUG
 	localparam UUID_WIDTH = 44;
 `else
@@ -69,6 +77,7 @@ package VX_gpu_pkg;
 	localparam UUID_WIDTH = 44;
 `else
 	localparam UUID_WIDTH = 1;
+`endif
 `endif
 `endif
 

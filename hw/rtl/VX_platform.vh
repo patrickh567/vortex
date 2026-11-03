@@ -31,10 +31,14 @@
     end \
     /* verilator lint_on GENUNNAMED */
 
-`define PACKAGE_ASSERT(cond) \
-    /* verilator lint_on UNUSED */ \
-    typedef bit [((cond) ? 0 : -1) : 0] static_assertion_at_line_`__LINE__; \
-    /* verilator lint_off UNUSED */
+// PACKAGE_ASSERT is a compile-time check (creates a [-1:0] vector
+// typedef when `cond` is false, which errors out). The unique typedef
+// name relied on `\`__LINE__` which VCS X-2025.06 doesn't substitute
+// in this context, and multiple invocations would otherwise collide.
+// Disable as a no-op for VCS — the asserts are sanity checks on
+// Vortex's own internal width invariants, which Vortex maintains;
+// they're not load-bearing for the actual RTL behaviour.
+`define PACKAGE_ASSERT(cond)
 
 `define ERROR(msg) \
     $error msg

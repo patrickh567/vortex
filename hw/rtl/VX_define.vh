@@ -184,25 +184,34 @@
     end \
     /* verilator lint_off GENUNNAMED */
 
+// VCS X-2025.06 doesn't expand `__LINE__ during macro substitution the
+// way Verilator does, so we wrap each instantiation in an unnamed
+// generate-if block (`if (1) begin ... end`) — every invocation lands
+// in a fresh auto-named scope (genblkN), avoiding the "Identifier
+// previously declared" error from multiple invocations in one module.
 `define REDUCE_TREE(__op, __out, __in, __n, __outw, __inw) \
-    VX_reduce_tree #( \
-        .IN_W  (__inw), \
-        .OUT_W (__outw), \
-        .N     (__n), \
-        .OP    ("__op") \
-    ) reduce`__LINE__ ( \
-        .data_in(__in), \
-        .data_out(__out) \
-    )
+    if (1) begin \
+        VX_reduce_tree #( \
+            .IN_W  (__inw), \
+            .OUT_W (__outw), \
+            .N     (__n), \
+            .OP    ("__op") \
+        ) inst ( \
+            .data_in(__in), \
+            .data_out(__out) \
+        ); \
+    end
 
 `define POP_COUNT_EX(out, in, model) \
-    VX_popcount #( \
-        .N ($bits(in)), \
-        .MODEL (model) \
-    ) __pop_count_ex`__LINE__ ( \
-        .data_in  (in), \
-        .data_out (out) \
-    )
+    if (1) begin \
+        VX_popcount #( \
+            .N ($bits(in)), \
+            .MODEL (model) \
+        ) inst ( \
+            .data_in  (in), \
+            .data_out (out) \
+        ); \
+    end
 
 `define POP_COUNT(out, in) `POP_COUNT_EX(out, in, 1)
 
@@ -218,30 +227,34 @@
     /* verilator lint_off GENUNNAMED */
 
 `define BUFFER_EX(dst, src, ena, resetw, latency) \
-    VX_pipe_register #( \
-        .DATAW  ($bits(dst)), \
-        .RESETW (resetw), \
-        .DEPTH  (latency) \
-    ) __buffer_ex`__LINE__ ( \
-        .clk      (clk), \
-        .reset    (reset), \
-        .enable   (ena), \
-        .data_in  (src), \
-        .data_out (dst) \
-    )
+    if (1) begin \
+        VX_pipe_register #( \
+            .DATAW  ($bits(dst)), \
+            .RESETW (resetw), \
+            .DEPTH  (latency) \
+        ) inst ( \
+            .clk      (clk), \
+            .reset    (reset), \
+            .enable   (ena), \
+            .data_in  (src), \
+            .data_out (dst) \
+        ); \
+    end
 
 `define BUFFER(dst, src) `BUFFER_EX(dst, src, 1'b1, $bits(dst), 1)
 
 `define NEG_EDGE(dst, src) \
-    VX_edge_trigger #( \
-        .POS  (0), \
-        .INIT (0) \
-    ) __neg_edge`__LINE__ ( \
-        .clk      (clk), \
-        .reset    (1'b0), \
-        .data_in  (src), \
-        .data_out (dst) \
-    )
+    if (1) begin \
+        VX_edge_trigger #( \
+            .POS  (0), \
+            .INIT (0) \
+        ) inst ( \
+            .clk      (clk), \
+            .reset    (1'b0), \
+            .data_in  (src), \
+            .data_out (dst) \
+        ); \
+    end
 
 ///////////////////////////////////////////////////////////////////////////////
 
